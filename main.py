@@ -69,7 +69,9 @@ def prompt_model():
 def generate_prompt(llm):
     prompt = prompt_model()
     llm_chain = LLMChain(prompt=prompt, llm=llm)
-    return llm_chain.run(prompt, llm)
+    # return llm_chain.run(prompt, llm)
+    response = llm_chain.run(prompt, llm)
+    return {"text": response}
 
 # Define a run function that sets up an image and label for classification using the gr.Interface.
 def run(llm, port):
