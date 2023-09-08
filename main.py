@@ -77,7 +77,7 @@ def generate_prompt(llm):
 def run(llm, port):
     try:
         gr.Interface(fn=generate_prompt, inputs=["text"], outputs=["text"],
-                     title=title, description=description).launch(server_port=port, share=True)
+                     title=title, description=description).launch(server_name="0.0.0.0",server_port=8080, share=True)
     except Exception as e:
         print(f"Error running Gradio interface: {str(e)}")
         raise
