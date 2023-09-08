@@ -16,6 +16,7 @@ n_gpu_layers = 40  # Change this value based on your model and your GPU VRAM poo
 n_batch = 512  # Should be between 1 and n_ctx, consider the amount of VRAM in your GPU.
 title = '🦜🔗 Chatbot LLama2 GGML running in Kubernetes'
 description = 'Chatbot LLama2 GGML'
+port = 8080
 
 # load the model
 model_name_or_path = "TheBloke/Llama-2-13B-chat-GGML"
@@ -71,10 +72,10 @@ def generate_prompt(llm):
     return llm_chain.run(prompt, llm)
 
 # Define a run function that sets up an image and label for classification using the gr.Interface.
-def run(llm):
+def run(llm, port):
     try:
         gr.Interface(fn=generate_prompt, inputs=["text"], outputs=["text"],
-                     title=title, description=description).launch(server="gr", share=True)
+                     title=title, description=description).launch(server_port=port, share=True)
     except Exception as e:
         print(f"Error running Gradio interface: {str(e)}")
         raise
@@ -82,7 +83,7 @@ def run(llm):
 if __name__ == "__main__":
     try:
         llm, model_path = prepare(model_name_or_path, model_basename, n_gpu_layers, n_batch, n_ctx)
-        run(llm)
+        run(llm, port)
     except KeyboardInterrupt:
         print("Application terminated by user.")
     except Exception as e:

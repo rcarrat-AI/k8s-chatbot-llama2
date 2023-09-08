@@ -19,7 +19,7 @@ WORKDIR /app
 
 COPY ./requirements.txt /app/requirements.txt
 
-RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
+RUN pip install --upgrade -r /app/requirements.txt
 
 RUN CMAKE_ARGS="-DLLAMA_CUBLAS=on" FORCE_CMAKE=1 pip install  llama-cpp-python==0.1.78 --force-reinstall --upgrade --no-cache-dir --verbose
 

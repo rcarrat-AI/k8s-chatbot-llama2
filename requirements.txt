@@ -2,8 +2,6 @@ huggingface_hub
 gradio
 requests
 langchain
-pip 
-pytest 
 cmake 
 scikit-build 
 setuptools 
