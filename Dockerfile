@@ -1,4 +1,4 @@
-FROM ubuntu:jammy
+FROM nvidia/cuda:11.8.0-runtime-ubuntu22.04
 
 # We need to set the host to 0.0.0.0 to allow outside access
 ENV HOST 0.0.0.0
@@ -23,6 +23,7 @@ RUN pip install --upgrade -r /app/requirements.txt
 RUN CMAKE_ARGS="-DLLAMA_CUBLAS=on" FORCE_CMAKE=1 pip install  llama-cpp-python==0.1.78 --force-reinstall --upgrade --no-cache-dir --verbose
 
 COPY main.py /app
+
 EXPOSE 8080
 
 CMD ["python3", "main.py"]
