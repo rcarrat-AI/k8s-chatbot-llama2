@@ -2,14 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: gradioapp
-  name: gradioapp-svc
+    app: k8s-llama2
+  name: k8s-llama2-svc
 spec:
   ports:
-  - port: 7860
-    protocol: TCP
-    targetPort: 7860
+    - port: 8080
+      protocol: TCP
+      targetPort: 7860
   selector:
-    app: gradioapp
+    app: k8s-llama2
   sessionAffinity: None
   type: ClusterIP

@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: gradioapp-ingress
+  name: k8s-llama2-ingress
   annotations:
     kubernetes.io/ingress.class: "nginx"
 spec:
@@ -12,6 +12,6 @@ spec:
             path: /
             backend:
               service:
-                name: gradioapp-svc
+                name: k8s-llama2-svc
                 port:
-                  number: 7860
+                  number: 8080

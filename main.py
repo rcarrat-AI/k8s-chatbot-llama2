@@ -1,5 +1,6 @@
 import requests
 import gradio as gr
+import langchain
 from huggingface_hub import hf_hub_download
 from llama_cpp import Llama
 from langchain.llms import LlamaCpp
@@ -14,11 +15,10 @@ n_gpu_layers=43 # Change this value based on your model and your GPU VRAM pool.
 n_ctx=4096 # Context window
 n_gpu_layers = 40  # Change this value based on your model and your GPU VRAM pool.
 n_batch = 512  # Should be between 1 and n_ctx, consider the amount of VRAM in your GPU.
-title = '🦜🔗 Chatbot LLama2 GGML running in Kubernetes'
-description = 'Chatbot LLama2 GGML'
+title = '🦜🔗 Chatbot LLama2 on Kubernetes'
+description = 'Chatbot using LLama2 GGML model running on top of Kubernetes'
 port = 8080
 
-# load the model
 model_name_or_path = "TheBloke/Llama-2-13B-chat-GGML"
 model_basename = "llama-2-13b-chat.ggmlv3.q5_1.bin"
 
@@ -57,34 +57,41 @@ def prepare(model_name_or_path, model_basename, n_gpu_layers, n_batch, n_ctx):
     llm = load_model(model_path, n_gpu_layers, n_batch, n_ctx)
     return llm, model_path
 
-def prompt_model():
+def prompt_template():
     template = """''SYSTEM: You are a helpful, respectful and honest assistant. Always answer as helpfully.
     USER: {question}
     ASSISTANT: """
     prompt = PromptTemplate(template=template, input_variables=["question"])
     return prompt
 
-# Define a function classify_image(inp) that preprocesses input image, performs prediction using 
-# inception_net, and returns a dictionary of class labels with corresponding probabilities.
-def generate_prompt(llm):
-    prompt = prompt_model()
+def build_chain(llm):
+    prompt = prompt_template()
     llm_chain = LLMChain(prompt=prompt, llm=llm)
-    # return llm_chain.run(prompt, llm)
-    response = llm_chain.run(prompt, llm)
-    return {"text": response}
+    return prompt, llm_chain
+
+def generate(prompt):
+    # The prompt will get passed to the LLM Chain!
+    return llm_chain.run(prompt)
+    # And will return responses
 
 # Define a run function that sets up an image and label for classification using the gr.Interface.
 def run(llm, port):
     try:
-        gr.Interface(fn=generate_prompt, inputs=["text"], outputs=["text"],
-                     title=title, description=description).launch(server_name="0.0.0.0",server_port=8080, share=True)
+        interface = gr.Interface(fn=generate, inputs=["text"], outputs=["text"],
+                     title=title, description=description, theme=gr.themes.Soft())
+        interface.launch(server_name="0.0.0.0",server_port=port, share=True)
+
     except Exception as e:
         print(f"Error running Gradio interface: {str(e)}")
         raise
 
 if __name__ == "__main__":
     try:
+        # Download and load the model
         llm, model_path = prepare(model_name_or_path, model_basename, n_gpu_layers, n_batch, n_ctx)
+        # Build the Langchain LLMChain
+        prompt, llm_chain = build_chain(llm)
+        # Execute Gradio App
         run(llm, port)
     except KeyboardInterrupt:
         print("Application terminated by user.")

@@ -3,23 +3,23 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: gradioapp
-  name: gradioapp
+    app: k8s-llama2
+  name: k8s-llama2
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: gradioapp
+      app: k8s-llama2
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: gradioapp
+        app: k8s-llama2
     spec:
       containers:
-        - image: quay.io/rcarrata/gradioapp:v2
-          name: gradioapp
+        - image: quay.io/rcarrata/k8s-llama2:v1
+          name: k8s-llama2
           ports:
-            - containerPort: 7860
+            - containerPort: 8080
           resources: {}
