@@ -1,6 +1,7 @@
 import requests
 import gradio as gr
 import langchain
+import os
 from huggingface_hub import hf_hub_download
 from llama_cpp import Llama
 from langchain.llms import LlamaCpp
@@ -8,19 +9,33 @@ from langchain import PromptTemplate, LLMChain
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
-# vars
-n_threads=2 # CPU cores
-n_batch=512 # Should be between 1 and n_ctx, consider the amount of VRAM in your GPU.
-n_gpu_layers=43 # Change this value based on your model and your GPU VRAM pool.
-n_ctx=4096 # Context window
-n_gpu_layers = 40  # Change this value based on your model and your GPU VRAM pool.
-n_batch = 512  # Should be between 1 and n_ctx, consider the amount of VRAM in your GPU.
-title = '🦜🔗 Chatbot LLama2 on Kubernetes'
-description = 'Chatbot using LLama2 GGML model running on top of Kubernetes'
-port = 8080
+### Variables are in defined also in the Configmap
+### This are used as a fallback 
+# n_threads=2 # CPU cores
+# n_batch=512 # Should be between 1 and n_ctx, consider the amount of VRAM in your GPU.
+# n_gpu_layers=43 # Change this value based on your model and your GPU VRAM pool.
+# n_ctx=4096 # Context window
+# n_gpu_layers = 40  # Change this value based on your model and your GPU VRAM pool.
+# n_batch = 512  # Should be between 1 and n_ctx, consider the amount of VRAM in your GPU.
+# title = '🦜🔗 Chatbot LLama2 on Kubernetes'
+# description = 'Chatbot using LLama2 GGML model running on top of Kubernetes'
+# port = 8080
+# model_name_or_path = "TheBloke/Llama-2-13B-chat-GGML"
+# model_basename = "llama-2-13b-chat.ggmlv3.q5_1.bin"
 
-model_name_or_path = "TheBloke/Llama-2-13B-chat-GGML"
-model_basename = "llama-2-13b-chat.ggmlv3.q5_1.bin"
+def load_config():
+    config = {
+        "n_threads": int(os.getenv("n_threads", 2)),
+        "n_batch": int(os.getenv("n_batch", 512)),
+        "n_gpu_layers": int(os.getenv("n_gpu_layers", 40)),
+        "n_ctx": int(os.getenv("n_ctx", 4096)),
+        "title": os.getenv("title", "🦜🔗 Chatbot LLama2 on Kubernetes"),
+        "description": os.getenv("description", "Chatbot using LLama2 GGML model running on top of Kubernetes"),
+        "port": int(os.getenv("port", 8080)),
+        "model_name_or_path": os.getenv("model_name_or_path", "TheBloke/Llama-2-13B-chat-GGML"),
+        "model_basename": os.getenv("model_basename", "llama-2-13b-chat.ggmlv3.q5_1.bin")
+    }
+    return config
 
 def download_model(model_name_or_path, model_basename):
     try:
@@ -87,6 +102,9 @@ def run(llm, port):
 
 if __name__ == "__main__":
     try:
+        # Load Config
+        config = load_config()
+        #print(config)
         # Download and load the model
         llm, model_path = prepare(model_name_or_path, model_basename, n_gpu_layers, n_batch, n_ctx)
         # Build the Langchain LLMChain
