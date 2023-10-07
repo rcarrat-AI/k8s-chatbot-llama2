@@ -4,10 +4,10 @@ This repo uses GGML Llama2 Optimization models to run the Llama2 13B model on a 
 
 ![Llama In K8s no GPU](./assets/llama0.png)
 
-* Performance in AMD EPYC 7R32, 8vCPUs and 32gb RAM -> 15 seconds
+* Performance in AMD EPYC 7R32, 8vCPUs and 32gb RAM (m5a.2xlarge) -> 35 seconds
 
 ```md
-kubectl logs -f -n k8s-llama2 deploy/k8s-llama2 --tail=15
+$ kubectl logs -f -n k8s-llama2 deploy/k8s-llama2 --tail=15
 
 llama_print_timings:        load time =  9663.88 ms
 llama_print_timings:      sample time =    96.66 ms /   113 runs   (    0.86 ms per token,  1169.06 tokens per second)
@@ -17,9 +17,23 @@ llama_print_timings:       total time = 35630.38 ms
 Llama.generate: prefix-match hit
 ```
 
+* No GPU used
+
+```md
+$ nvidia-smi | grep processes -A3 -B2
+|        ID   ID                                                   Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+```
+
 ## GGML for Llama2
 
 GGML was designed to be used in conjunction with the llama.cpp library, also created by Georgi Gerganov. The library is written in C/C++ for efficient inference of Llama models. It can load GGML models and run them on a CPU. Originally, this was the main difference with GPTQ models, which are loaded and run on a GPU. 
+
+## Model used by default
+
+The model used by default is the [TheBloke/Llama-2-13B-chat-GGML](https://github.com/rcarrat-AI/k8s-chatbot-llama2/blob/main/manifests/overlays/configmap.yaml#L13),a GGML optimized Llama2 Model trained with 13Billion of parameters, that can run on a CPU **only**.
 
 ## Prerequisites
 
