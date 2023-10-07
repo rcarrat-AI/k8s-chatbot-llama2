@@ -33,17 +33,22 @@ def load_config():
         "description": os.getenv("description", "Chatbot using LLama2 GGML model running on top of Kubernetes"),
         "port": int(os.getenv("port", 8080)),
         "model_name_or_path": os.getenv("model_name_or_path", "TheBloke/Llama-2-13B-chat-GGML"),
-        "model_basename": os.getenv("model_basename", "llama-2-13b-chat.ggmlv3.q5_1.bin")
+        "model_basename": os.getenv("model_basename", "llama-2-13b-chat.ggmlv3.q5_1.bin"),
+        "model_storage_path": os.getenv("model_storage_path", "/mnt/models"),
     }
     return config
 
-def download_model(model_name_or_path, model_basename):
+def download_model(model_name_or_path, model_basename, model_storage_path):
     try:
-        model_path = hf_hub_download(repo_id=model_name_or_path, filename=model_basename)
+        model_path = os.path.join(model_storage_path, model_basename)
+        if not os.path.exists(model_path):
+            # Download the model only if it doesn't exist in the specified path
+            hf_hub_download(repo_id=model_name_or_path, filename=model_basename, output_dir=model_storage_path)
         return model_path
     except Exception as e:
         print(f"Error downloading model: {str(e)}")
         raise
+
 
 def load_model(model_path, n_gpu_layers, n_batch, n_ctx):
     try:
@@ -67,8 +72,8 @@ def load_model(model_path, n_gpu_layers, n_batch, n_ctx):
         print(f"Error loading model: {str(e)}")
         raise
 
-def prepare(model_name_or_path, model_basename, n_gpu_layers, n_batch, n_ctx):
-    model_path = download_model(model_name_or_path, model_basename)
+def prepare(model_name_or_path, model_basename, n_gpu_layers, n_batch, n_ctx, model_storage_path):
+    model_path = download_model(model_name_or_path, model_basename, model_storage_path)
     llm = load_model(model_path, n_gpu_layers, n_batch, n_ctx)
     return llm, model_path
 
@@ -104,11 +109,22 @@ if __name__ == "__main__":
     try:
         # Load Config
         config = load_config()
-        #print(config)
+
+        # Extract configuration variables
+        model_name_or_path = config.get("model_name_or_path", "TheBloke/Llama-2-13B-chat-GGML")
+        model_basename = config.get("model_basename", "llama-2-13b-chat.ggmlv3.q5_1.bin")
+        n_gpu_layers = config.get("n_gpu_layers", 40)
+        n_batch = config.get("n_batch", 512)
+        n_ctx = config.get("n_ctx", 4096)
+        model_storage_path = config.get("model_storage_path", "/mnt/models")
+        port = config.get("port", 8080)
+
         # Download and load the model
-        llm, model_path = prepare(model_name_or_path, model_basename, n_gpu_layers, n_batch, n_ctx)
+        llm, model_path = prepare(model_name_or_path, model_basename, n_gpu_layers, n_batch, n_ctx, model_storage_path)
+
         # Build the Langchain LLMChain
         prompt, llm_chain = build_chain(llm)
+
         # Execute Gradio App
         run(llm, port)
     except KeyboardInterrupt:

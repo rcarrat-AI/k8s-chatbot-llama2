@@ -22,4 +22,10 @@ spec:
           name: k8s-llama2
           ports:
             - containerPort: 8080
-          resources: {}
+          volumeMounts:
+            - name: model-storage
+              mountPath: /mnt/models # Path where the model will be stored in the container
+      volumes:
+        - name: model-storage
+          persistentVolumeClaim:
+            claimName: llama-model-pvc
