@@ -8,9 +8,13 @@ from langchain.llms import LlamaCpp
 from langchain import PromptTemplate, LLMChain
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+import tempfile  # Import the tempfile module
+import logging  # Import the logging module
+from huggingface_hub import hf_hub_download
+
 
 ### Variables are in defined also in the Configmap
-### This are used as a fallback 
+### This are used as a fallback
 # n_threads=2 # CPU cores
 # n_batch=512 # Should be between 1 and n_ctx, consider the amount of VRAM in your GPU.
 # n_gpu_layers=43 # Change this value based on your model and your GPU VRAM pool.
@@ -36,26 +40,44 @@ def load_config():
         "model_basename": os.getenv("model_basename", "llama-2-13b-chat.ggmlv3.q5_1.bin"),
         "model_storage_path": os.getenv("model_storage_path", "/mnt/models"),
     }
+    logging.info(f"Loaded configuration: {config}")
     return config
+
+
 
 def download_model(model_name_or_path, model_basename, model_storage_path):
     try:
+        logging.info(f"Downloading model: {model_name_or_path}/{model_basename} to {model_storage_path}")
+        # Download the model to the current working directory
+        temp_model_path = hf_hub_download(repo_id=model_name_or_path, filename=model_basename)
+
+        # Move the downloaded model to the desired location
         model_path = os.path.join(model_storage_path, model_basename)
-        if not os.path.exists(model_path):
-            # Download the model only if it doesn't exist in the specified path
-            hf_hub_download(repo_id=model_name_or_path, filename=model_basename, output_dir=model_storage_path)
+        os.rename(temp_model_path, model_path)
+
         return model_path
     except Exception as e:
-        print(f"Error downloading model: {str(e)}")
+        logging.error(f"Error downloading model: {str(e)}")
         raise
 
+def prepare(model_name_or_path, model_basename, n_gpu_layers, n_batch, n_ctx, model_storage_path):
+    try:
+        logging.info("Preparing model...")
+        model_path = download_model(model_name_or_path, model_basename, model_storage_path)
+        llm = load_model(model_path, n_gpu_layers, n_batch, n_ctx)
+        return llm, model_path
+        logging.info("Model preparation completed.")
+    except Exception as e:
+        logging.error(f"Error preparing model: {str(e)}")
+        raise
 
 def load_model(model_path, n_gpu_layers, n_batch, n_ctx):
     try:
         # Callbacks support token-wise streaming
         callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
+        logging.info(f"Loading model from path: {model_path}")
 
-        # Loading model
+        # Loading model directly using the specified path
         llm = LlamaCpp(
             model_path=model_path,
             max_tokens=1024,  # Replace with a named constant
@@ -69,15 +91,12 @@ def load_model(model_path, n_gpu_layers, n_batch, n_ctx):
         )
         return llm
     except Exception as e:
-        print(f"Error loading model: {str(e)}")
+        logging.error(f"Error loading model: {str(e)}")
         raise
 
-def prepare(model_name_or_path, model_basename, n_gpu_layers, n_batch, n_ctx, model_storage_path):
-    model_path = download_model(model_name_or_path, model_basename, model_storage_path)
-    llm = load_model(model_path, n_gpu_layers, n_batch, n_ctx)
-    return llm, model_path
 
 def prompt_template():
+    logging.info("Prompt template created.")
     template = """''SYSTEM: You are a helpful, respectful and honest assistant. Always answer as helpfully.
     USER: {question}
     ASSISTANT: """
@@ -85,11 +104,13 @@ def prompt_template():
     return prompt
 
 def build_chain(llm):
+    logging.info("Langchain LLMChain built.")
     prompt = prompt_template()
     llm_chain = LLMChain(prompt=prompt, llm=llm)
     return prompt, llm_chain
 
 def generate(prompt):
+    logging.info(f"Received prompt: {prompt}")
     # The prompt will get passed to the LLM Chain!
     return llm_chain.run(prompt)
     # And will return responses
@@ -97,12 +118,14 @@ def generate(prompt):
 # Define a run function that sets up an image and label for classification using the gr.Interface.
 def run(llm, port):
     try:
+        logging.info(f"Starting Gradio interface on port {port}...")
         interface = gr.Interface(fn=generate, inputs=["text"], outputs=["text"],
                      title=title, description=description, theme=gr.themes.Soft())
         interface.launch(server_name="0.0.0.0",server_port=port, share=True)
+        logging.info("Gradio interface launched.")
 
     except Exception as e:
-        print(f"Error running Gradio interface: {str(e)}")
+        logging.error(f"Error running Gradio interface: {str(e)}")
         raise
 
 if __name__ == "__main__":
@@ -128,6 +151,6 @@ if __name__ == "__main__":
         # Execute Gradio App
         run(llm, port)
     except KeyboardInterrupt:
-        print("Application terminated by user.")
+        logging.info("Application terminated by user.")
     except Exception as e:
-        print(f"An unexpected error occurred: {str(e)}")
+        logging.error(f"An unexpected error occurred: {str(e)}")
