@@ -1,7 +1,7 @@
 all: build tag push
 
 NAME=k8s-llama2
-VERSION=v1
+VERSION=v5
 REGISTRY="quay.io/rcarrata"
 TOOL="docker"
 
