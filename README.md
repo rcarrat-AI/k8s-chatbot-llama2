@@ -1,5 +1,7 @@
 # Llama2 in Kubernetes with Gradio only with CPU (no GPU required)!
 
+This repo uses GGML Llama2 Optimization models to run the Llama2 13B model on a CPU (no GPU needed!) 
+
 ![Llama In K8s no GPU](./assets/llama0.png)
 
 * Performance in AMD EPYC 7R32, 8vCPUs and 32gb RAM -> 15 seconds
@@ -14,6 +16,10 @@ llama_print_timings:        eval time = 32794.48 ms /   112 runs   (  292.81 ms 
 llama_print_timings:       total time = 35630.38 ms
 Llama.generate: prefix-match hit
 ```
+
+## GGML for Llama2
+
+GGML was designed to be used in conjunction with the llama.cpp library, also created by Georgi Gerganov. The library is written in C/C++ for efficient inference of Llama models. It can load GGML models and run them on a CPU. Originally, this was the main difference with GPTQ models, which are loaded and run on a GPU. 
 
 ## Prerequisites
 
@@ -61,3 +67,12 @@ kubectl delete --all pod -n gpu-operator
 kubectl apply -k manifests/overlays/
 ```
 
+## Development
+
+* Adjust the Makefile variables with your own specs.
+
+* You can modify the image base and use your own:
+
+```md
+make all
+```
