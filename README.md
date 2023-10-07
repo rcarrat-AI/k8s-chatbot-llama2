@@ -1,8 +1,21 @@
-# Llama2 in Kubernetes with Gradio
+# Llama2 in Kubernetes with Gradio only with CPU (no GPU required)!
+
+![Llama In K8s no GPU](./assets/llama0.png)
+
+* Performance in AMD EPYC 7R32, 8vCPUs and 32gb RAM -> 15 seconds
+
+```md
+kubectl logs -f -n k8s-llama2 deploy/k8s-llama2 --tail=15
+
+llama_print_timings:        load time =  9663.88 ms
+llama_print_timings:      sample time =    96.66 ms /   113 runs   (    0.86 ms per token,  1169.06 tokens per second)
+llama_print_timings: prompt eval time =  2489.89 ms /    11 tokens (  226.35 ms per token,     4.42 tokens per second)
+llama_print_timings:        eval time = 32794.48 ms /   112 runs   (  292.81 ms per token,     3.42 tokens per second)
+llama_print_timings:       total time = 35630.38 ms
+Llama.generate: prefix-match hit
+```
 
 ## Prerequisites
-
-* Deploy [Kind cluster with GPU](https://www.substratus.ai/blog/kind-with-gpus)
 
 * Deploy Nginx Ingress Controller:
 

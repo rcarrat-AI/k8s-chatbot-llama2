@@ -18,13 +18,25 @@ spec:
         app: k8s-llama2
     spec:
       containers:
-        - image: quay.io/rcarrata/k8s-llama2:v2
+        - image: quay.io/rcarrata/k8s-llama2:v4
           name: k8s-llama2
           ports:
             - containerPort: 8080
           volumeMounts:
             - name: model-storage
               mountPath: /mnt/models # Path where the model will be stored in the container
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 120 # Wait for 5 seconds after the container starts before performing the probe
+            periodSeconds: 30 # Perform the probe every 10 seconds
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 60 # Wait for 10 seconds after the container starts before performing the probe
+            periodSeconds: 15 # Perform the probe every 15 seconds
       volumes:
         - name: model-storage
           persistentVolumeClaim:
