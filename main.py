@@ -12,21 +12,6 @@ import tempfile  # Import the tempfile module
 import logging  # Import the logging module
 from huggingface_hub import hf_hub_download
 
-
-### Variables are in defined also in the Configmap
-### This are used as a fallback
-# n_threads=2 # CPU cores
-# n_batch=512 # Should be between 1 and n_ctx, consider the amount of VRAM in your GPU.
-# n_gpu_layers=43 # Change this value based on your model and your GPU VRAM pool.
-# n_ctx=4096 # Context window
-# n_gpu_layers = 40  # Change this value based on your model and your GPU VRAM pool.
-# n_batch = 512  # Should be between 1 and n_ctx, consider the amount of VRAM in your GPU.
-# title = '🦜🔗 Chatbot LLama2 on Kubernetes'
-# description = 'Chatbot using LLama2 GGML model running on top of Kubernetes'
-# port = 8080
-# model_name_or_path = "TheBloke/Llama-2-13B-chat-GGML"
-# model_basename = "llama-2-13b-chat.ggmlv3.q5_1.bin"
-
 def load_config():
     config = {
         "n_threads": int(os.getenv("n_threads", 2)),
@@ -135,7 +120,7 @@ if __name__ == "__main__":
         port = config.get("port", 8080)
         title = config.get("title", "🦜🔗 Chatbot LLama2 on Kubernetes")
         description = config.get("description", "Chatbot using LLama2 GGML model running on top of Kubernetes")
-        
+
         # Download and load the model
         llm, model_path = prepare(model_name_or_path, model_basename, n_gpu_layers, n_batch, n_ctx, model_storage_path)
 
