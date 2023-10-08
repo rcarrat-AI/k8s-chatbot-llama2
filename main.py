@@ -133,7 +133,9 @@ if __name__ == "__main__":
         n_ctx = config.get("n_ctx", 4096)
         model_storage_path = config.get("model_storage_path", "/mnt/models")
         port = config.get("port", 8080)
-
+        title = config.get("title", "🦜🔗 Chatbot LLama2 on Kubernetes")
+        description = config.get("description", "Chatbot using LLama2 GGML model running on top of Kubernetes")
+        
         # Download and load the model
         llm, model_path = prepare(model_name_or_path, model_basename, n_gpu_layers, n_batch, n_ctx, model_storage_path)
 
