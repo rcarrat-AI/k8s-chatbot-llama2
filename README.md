@@ -4,7 +4,7 @@ This repo uses GGML Llama2 Optimization models to run the Llama2 13B model on a 
 
 ![Llama In K8s no GPU](./assets/llama0.png)
 
-* Performance in AMD EPYC 7R32, 8vCPUs and 32gb RAM (m5a.2xlarge) -> 30 seconds per full complex prompt
+* Performance in AMD EPYC 7R32, 8vCPUs and 32gb RAM (m5a.2xlarge) -> 3.5seconds per token and 30 seconds per full complex prompt!
 
 ```md
 $ kubectl logs -f -n k8s-llama2 deploy/k8s-llama2 --tail=8
