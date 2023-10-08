@@ -43,21 +43,13 @@ def load_config():
     logging.info(f"Loaded configuration: {config}")
     return config
 
-
-
 def download_model(model_name_or_path, model_basename, model_storage_path):
     try:
-        logging.info(f"Downloading model: {model_name_or_path}/{model_basename} to {model_storage_path}")
-        # Download the model to the current working directory
-        temp_model_path = hf_hub_download(repo_id=model_name_or_path, filename=model_basename)
-
-        # Move the downloaded model to the desired location
-        model_path = os.path.join(model_storage_path, model_basename)
-        os.rename(temp_model_path, model_path)
-
+        logging.info(f"Downloading model: {model_name_or_path}/{model_basename}")
+        model_path = hf_hub_download(repo_id=model_name_or_path, filename=model_basename)
         return model_path
     except Exception as e:
-        logging.error(f"Error downloading model: {str(e)}")
+        print(f"Error downloading model: {str(e)}")
         raise
 
 def prepare(model_name_or_path, model_basename, n_gpu_layers, n_batch, n_ctx, model_storage_path):
