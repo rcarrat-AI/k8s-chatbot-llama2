@@ -1,4 +1,4 @@
-# Llama2 in Kubernetes with Gradio only with CPU (no GPU required)!
+# GTP-Like Chatbot with Llama2 in Kubernetes only with CPU (no GPU required)!
 
 This repo uses GGML Llama2 Optimization models to run the Llama2 13B model on a CPU (no GPU needed!) 
 
