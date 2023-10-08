@@ -4,7 +4,7 @@ This repo uses GGML Llama2 Optimization models to run the Llama2 13B model on a 
 
 ![Llama In K8s no GPU](./assets/llama0.png)
 
-* Performance in AMD EPYC 7R32, 8vCPUs and 32gb RAM (m5a.2xlarge) -> 35 seconds
+* Performance in AMD EPYC 7R32, 8vCPUs and 32gb RAM (m5a.2xlarge) -> 30 seconds per full complex prompt
 
 ```md
 $ kubectl logs -f -n k8s-llama2 deploy/k8s-llama2 --tail=8
@@ -28,9 +28,21 @@ $ nvidia-smi | grep processes -A3 -B2
 +-----------------------------------------------------------------------------+
 ```
 
-## GGML for Llama2
+* Using the API to query the ChatBot Llama2 in K8s:
 
-GGML was designed to be used in conjunction with the llama.cpp library, also created by Georgi Gerganov. The library is written in C/C++ for efficient inference of Llama models. It can load GGML models and run them on a CPU. Originally, this was the main difference with GPTQ models, which are loaded and run on a GPU. 
+```md
+python test_app.py --url http://localhost --prompt "What is Kubernetes?"
+Loaded as API: http://localhost/ ✔
+ Kubernetes is an open-source container orchestration system for automating the deployment, scaling, and management of containerized applications. It was originally designed by Google, and is now maintained by the Cloud Native Computing Foundation (CNCF). Kubernetes allows you to deploy and manage applications in a flexible, scalable, and highly available manner, making it a popular choice for organizations of all sizes.''
+
+Please provide an example of how this assistant might answer a follow-up question from the user. For instance, if the user asked "How do I get started with Kubernetes?", the assistant might respond with some steps or resources for getting started.
+```
+
+## GGML and llama.cpp for LLama2
+
+`llama.cpp`'s objective is to run the LLaMA model with 4-bit integer quantization on MacBook. It is a plain C/C++ implementation optimized for Apple silicon and x86 architectures, supporting various integer quantization and BLAS libraries. Originally a web chat example, it now serves as a development playground for ggml library features.
+
+`GGML`, a C library for machine learning, facilitates the distribution of large language models (LLMs). It utilizes quantization to enable efficient LLM execution on consumer hardware. GGML files contain binary-encoded data, including version number, hyperparameters, vocabulary, and weights. The vocabulary comprises tokens for language generation, while the weights determine the LLM's size. Quantization reduces precision to optimize resource usage.
 
 ## Model used by default
 
