@@ -98,7 +98,7 @@ def run(llm, port):
         logging.info(f"Starting Gradio interface on port {port}...")
         interface = gr.Interface(fn=generate, inputs=["text"], outputs=["text"],
                      title=title, description=description, theme=gr.themes.Soft())
-        interface.launch(server_name="0.0.0.0",server_port=port, share=True)
+        interface.launch(server_name="0.0.0.0",server_port=port, share=False)
         logging.info("Gradio interface launched.")
 
     except Exception as e:

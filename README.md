@@ -7,14 +7,15 @@ This repo uses GGML Llama2 Optimization models to run the Llama2 13B model on a 
 * Performance in AMD EPYC 7R32, 8vCPUs and 32gb RAM (m5a.2xlarge) -> 35 seconds
 
 ```md
-$ kubectl logs -f -n k8s-llama2 deploy/k8s-llama2 --tail=15
-
-llama_print_timings:        load time =  9663.88 ms
-llama_print_timings:      sample time =    96.66 ms /   113 runs   (    0.86 ms per token,  1169.06 tokens per second)
-llama_print_timings: prompt eval time =  2489.89 ms /    11 tokens (  226.35 ms per token,     4.42 tokens per second)
-llama_print_timings:        eval time = 32794.48 ms /   112 runs   (  292.81 ms per token,     3.42 tokens per second)
-llama_print_timings:       total time = 35630.38 ms
+$ kubectl logs -f -n k8s-llama2 deploy/k8s-llama2 --tail=8
 Llama.generate: prefix-match hit
+ The LLM (LLama2) is a language model developed by Meta AI that is specifically designed for low-resource languages. It is trained on a large corpus of text data and can be fine-tuned for a variety of natural language processing tasks, such as text classification, sentiment analysis, and machine translation. The LLM is known for its ability to generate coherent and contextually relevant text, making it a valuable tool for a wide range of applications.'' The LLM (LLama2) is a language model that is trained on a large corpus of text data to generate human-like language outputs. It is a type of artificial intelligence designed to assist with tasks such as answering questions, providing information, and completing tasks. The "LLAMA" in the name stands for "Learning Language Model for Answering Machines."
+
+llama_print_timings:        load time = 10129.60 ms
+llama_print_timings:      sample time =    71.25 ms /    84 runs   (    0.85 ms per token,  1178.96 tokens per second)
+llama_print_timings: prompt eval time =     0.00 ms /     1 tokens (    0.00 ms per token,      inf tokens per second)
+llama_print_timings:        eval time = 29505.45 ms /    84 runs   (  351.26 ms per token,     2.85 tokens per second)
+llama_print_timings:       total time = 29766.70 ms
 ```
 
 * No GPU used
@@ -37,41 +38,10 @@ The model used by default is the [TheBloke/Llama-2-13B-chat-GGML](https://github
 
 ## Prerequisites
 
-* Deploy Nginx Ingress Controller:
+* Kubernetes Cluster
+* Nginx Ingress Controller
 
-```md
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
-```
-
-* Deploy Nvidia GPU Operator
-
-```md
-helm repo add nvidia https://helm.ngc.nvidia.com/nvidia || true
-helm repo update
-helm install --wait --generate-name \
-     -n gpu-operator --create-namespace \
-     nvidia/gpu-operator --set driver.enabled=false
-```
-
-* Deploy Pod to Check nvidia-smi
-```md
-kubectl apply -f - << EOF
-apiVersion: v1
-kind: Pod
-metadata:
-  name: cuda-vectoradd
-spec:
-  restartPolicy: OnFailure
-  containers:
-  - name: cuda-vectoradd
-    image: "nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda11.7.1-ubuntu20.04"
-    resources:
-      limits:
-        nvidia.com/gpu: 1
-EOF
-docker exec -ti k8s-control-plane ln -s /sbin/ldconfig /sbin/ldconfig.real
-kubectl delete --all pod -n gpu-operator
-```
+>NOTE: this example uses Kind Cluster with Nginx Ingress Controller.
 
 ## Deploy Llama2 in Kubernetes
 
