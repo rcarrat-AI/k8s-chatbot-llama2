@@ -1,7 +1,7 @@
 all: build tag push
 
 NAME=k8s-llama2
-VERSION=v5
+VERSION=v6
 REGISTRY="quay.io/rcarrata"
 TOOL="docker"
 
@@ -15,4 +15,4 @@ push:
 	@${TOOL} push ${REGISTRY}/${NAME}:${VERSION}
 
 run:
-	@${TOOL} run -d -p 7860:7860 ${REGISTRY}/${NAME}:${VERSION}
+	@${TOOL} run -d -p 8080:8080 ${REGISTRY}/${NAME}:${VERSION}

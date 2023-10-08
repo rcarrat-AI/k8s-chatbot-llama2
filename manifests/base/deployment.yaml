@@ -18,25 +18,76 @@ spec:
         app: k8s-llama2
     spec:
       containers:
-        - image: quay.io/rcarrata/k8s-llama2:v2
+        - image: quay.io/rcarrata/k8s-llama2:v6
           name: k8s-llama2
           ports:
             - containerPort: 8080
           volumeMounts:
             - name: model-storage
-              mountPath: /mnt/models # Path where the model will be stored in the container
+              mountPath: /mnt/models
           readinessProbe:
             httpGet:
               path: /
               port: 8080
-            initialDelaySeconds: 120 # Wait for 5 seconds after the container starts before performing the probe
-            periodSeconds: 30 # Perform the probe every 10 seconds
+            initialDelaySeconds: 120
+            periodSeconds: 30
           livenessProbe:
             httpGet:
               path: /
               port: 8080
-            initialDelaySeconds: 60 # Wait for 10 seconds after the container starts before performing the probe
-            periodSeconds: 15 # Perform the probe every 15 seconds
+            initialDelaySeconds: 60
+            periodSeconds: 15
+          env: # Add this section to pass ConfigMap values as environment variables
+            - name: n_threads
+              valueFrom:
+                configMapKeyRef:
+                  name: llama2-config
+                  key: n_threads
+            - name: n_batch
+              valueFrom:
+                configMapKeyRef:
+                  name: llama2-config
+                  key: n_batch
+            - name: n_gpu_layers
+              valueFrom:
+                configMapKeyRef:
+                  name: llama2-config
+                  key: n_gpu_layers
+            - name: n_ctx
+              valueFrom:
+                configMapKeyRef:
+                  name: llama2-config
+                  key: n_ctx
+            - name: title
+              valueFrom:
+                configMapKeyRef:
+                  name: llama2-config
+                  key: title
+            - name: description
+              valueFrom:
+                configMapKeyRef:
+                  name: llama2-config
+                  key: description
+            - name: port
+              valueFrom:
+                configMapKeyRef:
+                  name: llama2-config
+                  key: port
+            - name: model_name_or_path
+              valueFrom:
+                configMapKeyRef:
+                  name: llama2-config
+                  key: model_name_or_path
+            - name: model_basename
+              valueFrom:
+                configMapKeyRef:
+                  name: llama2-config
+                  key: model_basename
+            - name: model_storage_path
+              valueFrom:
+                configMapKeyRef:
+                  name: llama2-config
+                  key: model_storage_path
       volumes:
         - name: model-storage
           persistentVolumeClaim:
